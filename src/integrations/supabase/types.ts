@@ -14,7 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          instructions: Json | null
+          name: string
+          reward_item_name: string | null
+          reward_rarity: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          instructions?: Json | null
+          name: string
+          reward_item_name?: string | null
+          reward_rarity?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          instructions?: Json | null
+          name?: string
+          reward_item_name?: string | null
+          reward_rarity?: string | null
+        }
+        Relationships: []
+      }
+      activity_completions: {
+        Row: {
+          activity_id: string
+          completed_at: string
+          id: string
+          reward_earned: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          completed_at?: string
+          id?: string
+          reward_earned?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          completed_at?: string
+          id?: string
+          reward_earned?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_completions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      break_schedules: {
+        Row: {
+          break_time: string
+          created_at: string
+          do_not_disturb_end: string | null
+          do_not_disturb_start: string | null
+          id: string
+          is_active: boolean
+          user_id: string
+        }
+        Insert: {
+          break_time: string
+          created_at?: string
+          do_not_disturb_end?: string | null
+          do_not_disturb_start?: string | null
+          id?: string
+          is_active?: boolean
+          user_id: string
+        }
+        Update: {
+          break_time?: string
+          created_at?: string
+          do_not_disturb_end?: string | null
+          do_not_disturb_start?: string | null
+          id?: string
+          is_active?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      city_items: {
+        Row: {
+          created_at: string
+          id: string
+          is_placed: boolean
+          item_name: string
+          item_type: string
+          position_x: number
+          position_y: number
+          rarity: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_placed?: boolean
+          item_name: string
+          item_type: string
+          position_x?: number
+          position_y?: number
+          rarity: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_placed?: boolean
+          item_name?: string
+          item_type?: string
+          position_x?: number
+          position_y?: number
+          rarity?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          id: string
+          music_enabled: boolean
+          notifications_enabled: boolean
+          updated_at: string
+          user_id: string
+          voice_guidance_enabled: boolean
+          volume: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          music_enabled?: boolean
+          notifications_enabled?: boolean
+          updated_at?: string
+          user_id: string
+          voice_guidance_enabled?: boolean
+          volume?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          music_enabled?: boolean
+          notifications_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+          voice_guidance_enabled?: boolean
+          volume?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

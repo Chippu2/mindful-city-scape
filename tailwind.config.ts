@@ -61,7 +61,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Mindscape City specific colors
+				'city-sky': 'hsl(var(--city-sky))',
+				'city-ground': 'hsl(var(--city-ground))',
+				'magic-glow': 'hsl(var(--magic-glow))',
+				'rare-glow': 'hsl(var(--rare-glow))',
+				'legendary-glow': 'hsl(var(--legendary-glow))'
+			},
+			backgroundImage: {
+				'gradient-sky': 'var(--gradient-sky)',
+				'gradient-magic': 'var(--gradient-magic)',
+				'gradient-rare': 'var(--gradient-rare)',
+				'gradient-legendary': 'var(--gradient-legendary)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
