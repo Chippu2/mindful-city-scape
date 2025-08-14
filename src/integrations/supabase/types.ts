@@ -90,6 +90,7 @@ export type Database = {
           do_not_disturb_start: string | null
           id: string
           is_active: boolean
+          label: string | null
           user_id: string
         }
         Insert: {
@@ -99,6 +100,7 @@ export type Database = {
           do_not_disturb_start?: string | null
           id?: string
           is_active?: boolean
+          label?: string | null
           user_id: string
         }
         Update: {
@@ -108,6 +110,7 @@ export type Database = {
           do_not_disturb_start?: string | null
           id?: string
           is_active?: boolean
+          label?: string | null
           user_id?: string
         }
         Relationships: []
@@ -151,6 +154,36 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          reward_date: string
+          reward_item: string | null
+          reward_rarity: string | null
+          reward_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reward_date: string
+          reward_item?: string | null
+          reward_rarity?: string | null
+          reward_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reward_date?: string
+          reward_item?: string | null
+          reward_rarity?: string | null
+          reward_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -178,6 +211,72 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      screen_time_settings: {
+        Row: {
+          break_interval_minutes: number | null
+          created_at: string
+          daily_limit_minutes: number | null
+          id: string
+          notifications_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          break_interval_minutes?: number | null
+          created_at?: string
+          daily_limit_minutes?: number | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          break_interval_minutes?: number | null
+          created_at?: string
+          daily_limit_minutes?: number | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stats: {
+        Row: {
+          created_at: string
+          id: string
+          last_activity_date: string | null
+          legendary_items_count: number
+          rare_items_count: number
+          streak_count: number
+          total_breaks: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          legendary_items_count?: number
+          rare_items_count?: number
+          streak_count?: number
+          total_breaks?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_activity_date?: string | null
+          legendary_items_count?: number
+          rare_items_count?: number
+          streak_count?: number
+          total_breaks?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

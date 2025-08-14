@@ -6,6 +6,7 @@ import {
   Home, 
   Sparkles, 
   Building2, 
+  TrendingUp,
   Settings, 
   LogOut,
   Menu,
@@ -30,6 +31,7 @@ const Layout = ({ children }: LayoutProps) => {
     { path: '/', icon: Home, label: 'Break Schedule', description: 'Plan your mindful moments' },
     { path: '/activities', icon: Sparkles, label: 'Mindful Activities', description: 'Guided relaxation tasks' },
     { path: '/city', icon: Building2, label: 'Your City', description: 'Build your magical city' },
+    { path: '/stats', icon: TrendingUp, label: 'Your Journey', description: 'Track progress & rewards' },
     { path: '/settings', icon: Settings, label: 'Settings', description: 'Customize your experience' },
   ];
 

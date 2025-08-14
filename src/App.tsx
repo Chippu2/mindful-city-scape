@@ -10,7 +10,9 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Activities from "./pages/Activities";
 import City from "./pages/City";
+import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
+import AccountManagement from "./pages/AccountManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,10 +47,24 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
+            <Route path="/stats" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Stats />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Layout>
                   <Settings />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/account" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AccountManagement />
                 </Layout>
               </ProtectedRoute>
             } />
