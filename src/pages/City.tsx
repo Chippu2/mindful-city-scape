@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import CityCanvas from '@/components/3d/CityCanvas';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,11 @@ import {
   Crown,
   Package,
   RotateCcw,
-  Save
+  Save,
+  Users,
+  Palette,
+  Volume2,
+  Eye
 } from 'lucide-react';
 
 interface CityItem {
@@ -23,7 +28,18 @@ interface CityItem {
   rarity: string;
   position_x: number;
   position_y: number;
+  position_z: number;
   is_placed: boolean;
+}
+
+interface NPC {
+  id: string;
+  npc_name: string;
+  npc_type: string;
+  position_x: number;
+  position_y: number;
+  position_z: number;
+  behavior_script: any;
 }
 
 const rarityConfig = {
@@ -47,17 +63,29 @@ const City = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [cityItems, setCityItems] = useState<CityItem[]>([]);
+  const [npcs, setNpcs] = useState<NPC[]>([]);
   const [inventory, setInventory] = useState<CityItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [draggedItem, setDraggedItem] = useState<CityItem | null>(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const cityRef = useRef<HTMLDivElement>(null);
+  const [currentSeason, setCurrentSeason] = useState<'spring' | 'summer' | 'autumn' | 'winter'>('spring');
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
 
   useEffect(() => {
     if (user) {
       fetchCityItems();
+      fetchNPCs();
+      determineSeason();
     }
   }, [user]);
+
+  const determineSeason = () => {
+    const now = new Date();
+    const month = now.getMonth();
+    
+    if (month >= 2 && month <= 4) setCurrentSeason('spring');
+    else if (month >= 5 && month <= 7) setCurrentSeason('summer');
+    else if (month >= 8 && month <= 10) setCurrentSeason('autumn');
+    else setCurrentSeason('winter');
+  };
 
   const fetchCityItems = async () => {
     try {
@@ -86,49 +114,54 @@ const City = () => {
     }
   };
 
-  const handleDragStart = (item: CityItem, e: React.MouseEvent) => {
-    setDraggedItem(item);
-    
-    if (item.is_placed && cityRef.current) {
-      const rect = cityRef.current.getBoundingClientRect();
-      setDragOffset({
-        x: e.clientX - rect.left - item.position_x,
-        y: e.clientY - rect.top - item.position_y
-      });
-    } else {
-      setDragOffset({ x: 0, y: 0 });
+  const fetchNPCs = async () => {
+    try {
+      // For now, create some sample NPCs based on user's city items
+      const sampleNPCs: NPC[] = [
+        {
+          id: 'npc_1',
+          npc_name: 'Luna the Guide',
+          npc_type: 'quest_giver',
+          position_x: 2,
+          position_y: 0,
+          position_z: 2,
+          behavior_script: { greeting: "Welcome to your magical city!" }
+        },
+        {
+          id: 'npc_2',
+          npc_name: 'Melody the Musician',
+          npc_type: 'musician',
+          position_x: -2,
+          position_y: 0,
+          position_z: -2,
+          behavior_script: { greeting: "Let's make some beautiful music!" }
+        }
+      ];
+      
+      setNpcs(sampleNPCs);
+    } catch (error) {
+      console.error('Error fetching NPCs:', error);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    
-    if (!draggedItem || !cityRef.current) return;
-
-    const rect = cityRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(rect.width - 80, e.clientX - rect.left - dragOffset.x));
-    const y = Math.max(0, Math.min(rect.height - 80, e.clientY - rect.top - dragOffset.y));
-
+  const placeItemInCity = async (item: CityItem, x: number, y: number, z: number = 0) => {
     try {
       const { error } = await supabase
         .from('city_items')
         .update({
           position_x: x,
           position_y: y,
+          position_z: z,
           is_placed: true
         })
-        .eq('id', draggedItem.id);
+        .eq('id', item.id);
 
       if (error) throw error;
       
-      fetchCityItems();
+      await fetchCityItems();
       toast({
         title: "Item placed!",
-        description: `${draggedItem.item_name} added to your city`
+        description: `${item.item_name} added to your city`
       });
     } catch (error) {
       console.error('Error placing item:', error);
@@ -138,8 +171,6 @@ const City = () => {
         variant: "destructive"
       });
     }
-    
-    setDraggedItem(null);
   };
 
   const removeFromCity = async (item: CityItem) => {
@@ -150,6 +181,7 @@ const City = () => {
           is_placed: false,
           position_x: 0,
           position_y: 0
+          position_z: 0
         })
         .eq('id', item.id);
 
@@ -170,6 +202,29 @@ const City = () => {
     }
   };
 
+  const handleItemClick = (item: CityItem) => {
+    toast({
+      title: item.item_name,
+      description: `A ${item.rarity} ${item.item_type} in your magical city`
+    });
+  };
+
+  const handleNPCClick = (npc: NPC) => {
+    toast({
+      title: npc.npc_name,
+      description: npc.behavior_script.greeting || "Hello there!"
+    });
+  };
+
+  const quickPlaceItem = async (item: CityItem) => {
+    // Quick place at random position
+    const x = (Math.random() - 0.5) * 10;
+    const y = 0;
+    const z = (Math.random() - 0.5) * 10;
+    
+    await placeItemInCity(item, x, y, z);
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -187,8 +242,39 @@ const City = () => {
           Your Magical City
         </h1>
         <p className="text-muted-foreground">
-          Drag and drop items from your inventory to build your mindful oasis
+          Build your 3D magical city with earned items and friendly NPCs
         </p>
+        <div className="flex justify-center space-x-2">
+          <Badge variant="outline">
+            {currentSeason.charAt(0).toUpperCase() + currentSeason.slice(1)} Season
+          </Badge>
+          <Badge variant="outline">
+            {cityItems.length} Items Placed
+          </Badge>
+          <Badge variant="outline">
+            {npcs.length} NPCs
+          </Badge>
+        </div>
+      </div>
+
+      {/* View Controls */}
+      <div className="flex justify-center space-x-4">
+        <Button
+          variant={viewMode === '3d' ? 'default' : 'outline'}
+          onClick={() => setViewMode('3d')}
+          className="border-primary/20"
+        >
+          <Eye className="w-4 h-4 mr-2" />
+          3D View
+        </Button>
+        <Button
+          variant={viewMode === '2d' ? 'default' : 'outline'}
+          onClick={() => setViewMode('2d')}
+          className="border-primary/20"
+        >
+          <Palette className="w-4 h-4 mr-2" />
+          2D View
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -198,85 +284,62 @@ const City = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Building2 className="w-5 h-5 mr-2 text-primary" />
-                City Canvas
+                {viewMode === '3d' ? '3D City View' : '2D City Canvas'}
               </CardTitle>
               <CardDescription>
-                Drop items here to place them in your city
+                {viewMode === '3d' ? 'Explore your magical 3D city' : 'Classic 2D city view'}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <div
-                ref={cityRef}
-                className="relative h-96 bg-gradient-sky border-2 border-dashed border-primary/30 overflow-hidden"
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              >
-                {/* Ground */}
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-city-ground opacity-60"></div>
-                
-                {/* Placed items */}
-                {cityItems.map((item) => {
-                  const ItemIcon = itemIcons[item.item_type as keyof typeof itemIcons] || Building2;
-                  const rarity = rarityConfig[item.rarity as keyof typeof rarityConfig];
+              {viewMode === '3d' ? (
+                <CityCanvas
+                  cityItems={cityItems}
+                  npcs={npcs}
+                  season={currentSeason}
+                  onItemClick={handleItemClick}
+                  onNPCClick={handleNPCClick}
+                />
+              ) : (
+                <div className="relative h-96 bg-gradient-sky border-2 border-dashed border-primary/30 overflow-hidden">
+                  {/* 2D fallback view */}
+                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-city-ground opacity-60"></div>
                   
-                  return (
-                    <div
-                      key={item.id}
-                      className={`
-                        absolute w-16 h-16 cursor-move group transition-all duration-200 hover:scale-110
-                        ${draggedItem?.id === item.id ? 'opacity-50' : ''}
-                      `}
-                      style={{
-                        left: item.position_x,
-                        top: item.position_y,
-                      }}
-                      onMouseDown={(e) => handleDragStart(item, e)}
-                      draggable
-                    >
-                      <div className={`
-                        w-full h-full rounded-lg border-2 ${rarity.border} ${rarity.bg} 
-                        flex items-center justify-center shadow-lg backdrop-blur-sm
-                        group-hover:shadow-xl group-hover:${rarity.border}
-                      `}>
-                        <ItemIcon className={`w-8 h-8 ${rarity.color}`} />
-                      </div>
-                      
-                      {/* Remove button */}
-                      <Button
-                        size="icon"
-                        variant="destructive"
-                        className="absolute -top-2 -right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFromCity(item);
+                  {cityItems.map((item) => {
+                    const ItemIcon = itemIcons[item.item_type as keyof typeof itemIcons] || Building2;
+                    const rarity = rarityConfig[item.rarity as keyof typeof rarityConfig];
+                    
+                    return (
+                      <div
+                        key={item.id}
+                        className="absolute w-16 h-16 cursor-pointer group transition-all duration-200 hover:scale-110"
+                        style={{
+                          left: item.position_x * 20 + 200,
+                          top: item.position_z * 20 + 200,
                         }}
+                        onClick={() => handleItemClick(item)}
                       >
-                        <RotateCcw className="w-3 h-3" />
-                      </Button>
-                      
-                      {/* Item name tooltip */}
-                      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-background/90 backdrop-blur-sm rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {item.item_name}
+                        <div className={`w-full h-full rounded-lg border-2 ${rarity.border} ${rarity.bg} flex items-center justify-center shadow-lg`}>
+                          <ItemIcon className={`w-8 h-8 ${rarity.color}`} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {cityItems.length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center space-y-4">
+                        <Building2 className="w-16 h-16 text-muted-foreground mx-auto" />
+                        <div>
+                          <h3 className="text-lg font-medium text-muted-foreground">Your city awaits</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Complete activities to earn items for your magical city
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-
-                {/* Empty state */}
-                {cityItems.length === 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <Building2 className="w-16 h-16 text-muted-foreground mx-auto" />
-                      <div>
-                        <h3 className="text-lg font-medium text-muted-foreground">Your city awaits</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Complete activities to earn items, then drag them here to build your city
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -338,6 +401,40 @@ const City = () => {
                   );
                 })
               )}
+            </CardContent>
+          </Card>
+
+          {/* NPCs Panel */}
+          <Card className="border-primary/20 mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2 text-primary" />
+                City NPCs
+              </CardTitle>
+              <CardDescription>
+                Friendly inhabitants of your city
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {npcs.map((npc) => (
+                <div
+                  key={npc.id}
+                  className="p-3 rounded-lg border border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
+                  onClick={() => handleNPCClick(npc)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 rounded-full bg-gradient-magic">
+                      <Users className="w-4 h-4 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{npc.npc_name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {npc.npc_type.replace('_', ' ')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
